@@ -1,0 +1,13 @@
+model\categoria.class
+dao\telefonoDAO.class
+dao\Vendedor.class
+model\Vendedor.class
+modelo\DetalleVenta.class
+model\Telefono.class
+dao\TecnoStoreDAO.class
+com\s2\projectstreamapi\Main.class
+dao\Conexion.class
+modelo\Cliente.class
+modelo\Persona.class
+modelo\Producto.class
+conexion\Conexion.class
