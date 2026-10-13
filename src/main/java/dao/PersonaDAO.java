@@ -1,38 +1,24 @@
 package dao;
-
-import modelo.Cliente;
 import modelo.Persona;
-import modelo.Vendedor;
 import persistencia.Conexion;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PersonaDAO {
-
-    public Persona validarUsuario(String identificacion) {
-        String sql = "SELECT * FROM personas WHERE identificacion = ?";
-        try (Connection conn = Conexion.getInstancia().getConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, identificacion);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String nombre = rs.getString("nombre");
-                String tipo = rs.getString("tipo_persona");
-                String correo = rs.getString("correo");
-                String telefono = rs.getString("telefono");
-
-                if ("CLIENTE".equalsIgnoreCase(tipo)) {
-                    return new Cliente(identificacion, nombre, correo, telefono);
-                } else if ("VENDEDOR".equalsIgnoreCase(tipo)) {
-                    return new Vendedor(identificacion, nombre, correo, telefono);
-                }
+    private final Connection con;
+    public PersonaDAO() { this.con = Conexion.getConexion(); }
+    public List<Persona> listar() {
+        List<Persona> lista = new ArrayList<>();
+        String sql = "SELECT * FROM personas";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                Persona p = new Persona(rs.getInt("id"), rs.getString("nombre"), rs.getString("documento"), rs.getString("telefono"), rs.getString("correo")) {};
+                lista.add(p);
             }
-        } catch (SQLException e) {
-            System.err.println("Error al validar usuario: " + e.getMessage());
-        }
-        return null;
+        } catch(SQLException e) { System.out.println("Error: " + e.getMessage()); }
+        return lista;
     }
 }

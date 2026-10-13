@@ -30,7 +30,6 @@ public class Conexion {
 
     public Connection getConexion() {
         try {
-            // Si la conexión se cerró, la reconectamos
             if (conexion == null || conexion.isClosed()) {
                 conexion = DriverManager.getConnection(URL, USER, PASSWORD);
             }

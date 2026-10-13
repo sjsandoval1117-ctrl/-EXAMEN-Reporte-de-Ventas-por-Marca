@@ -1,87 +1,24 @@
 package dao;
-
-import modelo.Producto;
+import modelo.Celular;
 import persistencia.Conexion;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CelularDAO {
-
-    public List<Producto> obtenerCelulares() {
-        List<Producto> lista = new ArrayList<>();
+    private final Connection con;
+    public CelularDAO() { this.con = Conexion.getConexion(); }
+    public List<Celular> listar() {
+        List<Celular> lista = new ArrayList<>();
         String sql = "SELECT * FROM celulares";
-        try (Connection conn = Conexion.getInstancia().getConexion();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                lista.add(new Producto(
-                    rs.getInt("id"),
-                    rs.getString("sku"),
-                    rs.getString("marca"),
-                    rs.getString("modelo"),
-                    rs.getString("sistema_operativo"),
-                    rs.getString("gama"),
-                    rs.getDouble("precio"),
-                    rs.getInt("stock"),
-                    rs.getInt("stock_minimo")
-                ));
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                Celular c = new Celular(rs.getInt("id"), rs.getString("marca"), rs.getString("modelo"), rs.getInt("stock"), 10, 3);
+                lista.add(c);
             }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener celulares: " + e.getMessage());
-        }
-        return lista;
-    }
-
-    public Producto buscarPorSku(String sku) {
-        String sql = "SELECT * FROM celulares WHERE sku = ?";
-        try (Connection conn = Conexion.getInstancia().getConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, sku);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new Producto(
-                    rs.getInt("id"),
-                    rs.getString("sku"),
-                    rs.getString("marca"),
-                    rs.getString("modelo"),
-                    rs.getString("sistema_operativo"),
-                    rs.getString("gama"),
-                    rs.getDouble("precio"),
-                    rs.getInt("stock"),
-                    rs.getInt("stock_minimo")
-                );
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al buscar celular por SKU: " + e.getMessage());
-        }
-        return null;
-    }
-
-    public List<Producto> filtrarPorMarca(String marca) {
-        List<Producto> lista = new ArrayList<>();
-        String sql = "SELECT * FROM celulares WHERE marca LIKE ?";
-        try (Connection conn = Conexion.getInstancia().getConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, "%" + marca + "%");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                lista.add(new Producto(
-                    rs.getInt("id"),
-                    rs.getString("sku"),
-                    rs.getString("marca"),
-                    rs.getString("modelo"),
-                    rs.getString("sistema_operativo"),
-                    rs.getString("gama"),
-                    rs.getDouble("precio"),
-                    rs.getInt("stock"),
-                    rs.getInt("stock_minimo")
-                ));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al filtrar celulares por marca: " + e.getMessage());
-        }
+        } catch(SQLException e) { System.out.println("Error: " + e.getMessage()); }
         return lista;
     }
 }

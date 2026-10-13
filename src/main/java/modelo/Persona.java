@@ -1,45 +1,30 @@
 package modelo;
 
 public abstract class Persona {
-<<<<<<< HEAD
-    protected String identificacion;
-    protected String nombre;
-    protected String correo;
-    protected String telefono;
-=======
-    private String identificacion;
+    private int id;
     private String nombre;
-    private String correo;
+    private String documento;
     private String telefono;
->>>>>>> 9f9df755ed2b7b638f8435ac2bbe9bb4cf9fd910
+    private String correo;
 
-    public Persona(String identificacion, String nombre, String correo, String telefono) {
-        this.identificacion = identificacion;
+    public Persona() {}
+
+    public Persona(int id, String nombre, String documento, String telefono, String correo) {
+        this.id = id;
         this.nombre = nombre;
-        this.correo = correo;
+        this.documento = documento;
         this.telefono = telefono;
+        this.correo = correo;
     }
 
-<<<<<<< HEAD
-    public abstract void mostrarRol();
-
-    public String getIdentificacion() { return identificacion; }
-    public String getNombre() { return nombre; }
-    public String getCorreo() { return correo; }
-    public String getTelefono() { return telefono; }
-=======
-    public String getIdentificacion() { return identificacion; }
-    public void setIdentificacion(String identificacion) { this.identificacion = identificacion; }
-
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
-
+    public String getDocumento() { return documento; }
+    public void setDocumento(String documento) { this.documento = documento; }
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
-
-    public abstract void mostrarRol();
->>>>>>> 9f9df755ed2b7b638f8435ac2bbe9bb4cf9fd910
+    public String getCorreo() { return correo; }
+    public void setCorreo(String correo) { this.correo = correo; }
 }

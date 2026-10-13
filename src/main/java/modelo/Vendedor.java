@@ -1,12 +1,13 @@
 package modelo;
 
 public class Vendedor extends Persona {
-    public Vendedor(String identificacion, String nombre, String correo, String telefono) {
-        super(identificacion, nombre, correo, telefono);
+    private String codigoVendedor;
+
+    public Vendedor(int id, String nombre, String documento, String telefono, String correo, String codigoVendedor) {
+        super(id, nombre, documento, telefono, correo);
+        this.codigoVendedor = codigoVendedor;
     }
 
-    @Override
-    public void mostrarRol() {
-        System.out.println("Rol en el sistema: VENDEDOR");
-    }
+    public String getCodigoVendedor() { return codigoVendedor; }
+    public void setCodigoVendedor(String codigoVendedor) { this.codigoVendedor = codigoVendedor; }
 }
