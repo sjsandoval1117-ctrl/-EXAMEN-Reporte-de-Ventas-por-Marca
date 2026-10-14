@@ -7,20 +7,39 @@ import utilidades.ArchivoUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import modelo.CelularFactory;
+import java.text.DecimalFormat;
 
 public class ModuloVentas {
     private final List<Celular> inventarioMemoria = new ArrayList<>();
     private final List<DetalleVenta> carritoActual = new ArrayList<>();
 
     public ModuloVentas() {
-        inventarioMemoria.add(new Celular(1, "Samsung", "Galaxy S25 Ultra", 4999900.0, 10));
-        inventarioMemoria.add(new Celular(2, "Apple", "iPhone 14", 3500000.0, 5));
-        inventarioMemoria.add(new Celular(3, "Xiaomi", "Redmi Note 13", 1200000.0, 8));
-        inventarioMemoria.add(new Celular(4, "Motorola", "Moto G67 5G", 987900.0, 12));
-        inventarioMemoria.add(new Celular(5, "Infinix", "Note 60 5G", 1149900.0, 15));
-        inventarioMemoria.add(new Celular(6, "Realme", "12 Pro+", 1850000.0, 7));
+        inventarioMemoria.add(CelularFactory.crearCelular(1, "Samsung", "Galaxy S25 Ultra", 4999900.0, 10));
+        inventarioMemoria.add(CelularFactory.crearCelular(2, "Apple", "iPhone 14", 3500000.0, 5));
+        inventarioMemoria.add(CelularFactory.crearCelular(3, "Xiaomi", "Redmi Note 13", 1200000.0, 8));
+        inventarioMemoria.add(CelularFactory.crearCelular(4, "Motorola", "Moto G67 5G", 987900.0, 12));
+        inventarioMemoria.add(CelularFactory.crearCelular(5, "Infinix", "Note 60 5G", 1149900.0, 15));
+        inventarioMemoria.add(CelularFactory.crearCelular(6, "Realme", "12 Pro+", 1850000.0, 7));
+        
+        // Restablece automáticamente el stock en MySQL al iniciar la app para pruebas
+        reiniciarStockBD();
     }
+    
+    public void reiniciarStockBD() {
+        String url = "jdbc:mysql://localhost:3306/tecnostore_SaraSandoval?useSSL=false&serverTimezone=UTC";
+        String user = "root"; 
+        String password = "Sara1097497675*";
 
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(url, user, password);
+             java.sql.PreparedStatement pstmt = conn.prepareStatement("UPDATE celulares SET stock = 50")) {
+            pstmt.executeUpdate();
+            System.out.println("[INFO] Stock en la base de datos restablecido a 50 unidades para pruebas.");
+        } catch (Exception e) {
+            System.out.println("Aviso al restablecer stock: " + e.getMessage());
+        }
+    }
+    
     public List<Celular> getInventarioMemoria() {
         return inventarioMemoria;
     }
@@ -76,6 +95,8 @@ public class ModuloVentas {
         System.out.println(mensajeCantidad);
         System.out.println("--------------------------------------------------\n");
 
+        DecimalFormat df = new DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(java.util.Locale.US));
+
         StringBuilder sb = new StringBuilder();
         sb.append("==== RESUMEN DE VENTAS TOTALES TECNOSTORE ====\n");
         sb.append("Vendedora: Sara Julieth Sandoval Orellan (DEV001)\n");
@@ -85,11 +106,11 @@ public class ModuloVentas {
         for (DetalleVenta dv : carritoActual) {
             sb.append("- ").append(dv.getCelular().getMarca()).append(" ").append(dv.getCelular().getModelo())
               .append(" | Cantidad: ").append(dv.getCantidad())
-              .append(" | Subtotal: $").append(dv.getSubtotal()).append("\n");
+              .append(" | Subtotal: $").append(df.format(dv.getSubtotal())).append("\n");
         }
         sb.append("----------------------------------------------\n");
         sb.append("TOTAL UNIDADES: ").append(totalUnidades).append("\n");
-        sb.append("TOTAL GENERAL: $").append(totalGeneral).append("\n");
+        sb.append("TOTAL GENERAL: $").append(df.format(totalGeneral)).append("\n");
         sb.append("==============================================\n");
 
         try {
@@ -133,22 +154,32 @@ public class ModuloVentas {
                         int pedidoId = generatedKeys.getInt(1);
 
                         String sqlDetalle = "INSERT INTO detalle_venta (pedido_id, celular_id, cantidad, subtotal) VALUES (?, ?, ?, ?)";
-                        try (java.sql.PreparedStatement pstmtDetalle = conn.prepareStatement(sqlDetalle)) {
+                        String sqlUpdateStock = "UPDATE celulares SET stock = stock - ? WHERE id = ?";
+
+                        try (java.sql.PreparedStatement pstmtDetalle = conn.prepareStatement(sqlDetalle);
+                             java.sql.PreparedStatement pstmtStock = conn.prepareStatement(sqlUpdateStock)) {
+                            
                             for (DetalleVenta dv : carritoActual) {
+                                // 1. Registrar detalle de venta
                                 pstmtDetalle.setInt(1, pedidoId);
                                 pstmtDetalle.setInt(2, dv.getCelular().getId()); 
                                 pstmtDetalle.setInt(3, dv.getCantidad());
                                 pstmtDetalle.setDouble(4, dv.getSubtotal());
                                 pstmtDetalle.executeUpdate();
+
+                                // 2. Descontar el stock en la base de datos
+                                pstmtStock.setInt(1, dv.getCantidad());
+                                pstmtStock.setInt(2, dv.getCelular().getId());
+                                pstmtStock.executeUpdate();
                             }
                         }
                     }
                 }
             }
             conn.commit();
-            System.out.println("¡Venta registrada exitosamente!");
+            System.out.println("¡Venta registrada y stock actualizado exitosamente!");
         } catch (Exception e) {
-            System.out.println("Error al guardar" + e.getMessage());
+            System.out.println("Error al guardar: " + e.getMessage());
         }
 
         carritoActual.clear();

@@ -6,6 +6,7 @@ utilidades\validaciones.class
 dao\CelularDAO.class
 modelo\Categoria.class
 modelo\DetalleVenta.class
+modelo\CelularFactory.class
 modelo\Vendedor.class
 dao\TecnoStoreDAO.class
 dao\VendedorDAO.class
