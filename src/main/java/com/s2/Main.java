@@ -61,7 +61,7 @@ public class Main {
                 }
 
                 case 4 -> {
-                    System.out.println("Saliendo del sistema TecnoStore. ¡Hasta pronto!");
+                    System.out.println("Saliendo del sistema TecnoStore.Hasta pronto");
                     salir = true;
                 }
 

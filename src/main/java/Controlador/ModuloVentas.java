@@ -1,5 +1,6 @@
 package Controlador;
 
+import java.io.IOException;
 import modelo.Celular;
 import modelo.DetalleVenta;
 import utilidades.ArchivoUtils;
@@ -51,22 +52,104 @@ public class ModuloVentas {
     }
 
     public void finalizarVentaYGenerarReporte() {
+        if (carritoActual.isEmpty()) {
+            System.out.println("El carrito está vacío. No hay productos para procesar.");
+            return;
+        }
+
         double totalGeneral = carritoActual.stream()
             .mapToDouble(DetalleVenta::getSubtotal)
             .sum();
 
+        int totalUnidades = carritoActual.stream()
+            .mapToInt(DetalleVenta::getCantidad)
+            .sum();
+
+        String mensajeCantidad;
+        if (totalUnidades >= 3) {
+            mensajeCantidad = "¡Felicidades! Has realizado una COMPRA AL POR MAYOR (" + totalUnidades + " unidades). ¡Gracias por preferir a TecnoStore para tus compras corporativas!";
+        } else {
+            mensajeCantidad = "Gracias por tu compra al por menor (" + totalUnidades + " unidad/es). ¡Disfruta tu nuevo dispositivo TecnoStore!";
+        }
+
+        System.out.println("\n--------------------------------------------------");
+        System.out.println(mensajeCantidad);
+        System.out.println("--------------------------------------------------\n");
+
         StringBuilder sb = new StringBuilder();
         sb.append("==== RESUMEN DE VENTAS TOTALES TECNOSTORE ====\n");
+        sb.append("Vendedora: Sara Julieth Sandoval Orellan (DEV001)\n");
+        sb.append("Fecha/Hora: ").append(java.time.LocalDateTime.now()).append("\n");
+        sb.append("Mensaje: ").append(mensajeCantidad).append("\n");
+        sb.append("----------------------------------------------\n");
         for (DetalleVenta dv : carritoActual) {
             sb.append("- ").append(dv.getCelular().getMarca()).append(" ").append(dv.getCelular().getModelo())
               .append(" | Cantidad: ").append(dv.getCantidad())
               .append(" | Subtotal: $").append(dv.getSubtotal()).append("\n");
         }
+        sb.append("----------------------------------------------\n");
+        sb.append("TOTAL UNIDADES: ").append(totalUnidades).append("\n");
         sb.append("TOTAL GENERAL: $").append(totalGeneral).append("\n");
         sb.append("==============================================\n");
 
-        ArchivoUtils.guardarTexto("ResumenVentasTecnoStore.txt", sb.toString());
-        System.out.println("Resumen de ventas exportado a 'ResumenVentasTecnoStore.txt'.");
+        try {
+            String rutaProyecto = System.getProperty("user.dir");
+            java.io.File carpeta = new java.io.File(rutaProyecto, "reportes");
+            
+            if (!carpeta.exists()) {
+                boolean creada = carpeta.mkdirs();
+                if (creada) {
+                    System.out.println("Carpeta 'reportes' creada exitosamente en: " + carpeta.getAbsolutePath());
+                }
+            }
+
+            String rutaArchivo = carpeta.getAbsolutePath() + "/ResumenVenta_" + System.currentTimeMillis() + ".txt";
+            try (java.io.FileWriter writer = new java.io.FileWriter(rutaArchivo)) {
+                writer.write(sb.toString());
+            }
+
+            System.out.println("Resumen de ventas exportado exitosamente a '" + rutaArchivo + "'.");
+
+        } catch (IOException e) {
+            System.out.println("Error al guardar el archivo en la carpeta reportes: " + e.getMessage());
+        }
+
+        String url = "jdbc:mysql://localhost:3306/tecnostore_SaraSandoval?useSSL=false&serverTimezone=UTC";
+        String user = "root"; 
+        String password = "Sara1097497675*";
+
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(url, user, password)) {
+            conn.setAutoCommit(false);
+
+            String sqlPedido = "INSERT INTO pedido (cliente_id, vendedor_id, total) VALUES (?, ?, ?)";
+            try (java.sql.PreparedStatement pstmtPedido = conn.prepareStatement(sqlPedido, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                pstmtPedido.setInt(1, 1);
+                pstmtPedido.setInt(2, 1);
+                pstmtPedido.setDouble(3, totalGeneral);
+                pstmtPedido.executeUpdate();
+
+                try (java.sql.ResultSet generatedKeys = pstmtPedido.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int pedidoId = generatedKeys.getInt(1);
+
+                        String sqlDetalle = "INSERT INTO detalle_venta (pedido_id, celular_id, cantidad, subtotal) VALUES (?, ?, ?, ?)";
+                        try (java.sql.PreparedStatement pstmtDetalle = conn.prepareStatement(sqlDetalle)) {
+                            for (DetalleVenta dv : carritoActual) {
+                                pstmtDetalle.setInt(1, pedidoId);
+                                pstmtDetalle.setInt(2, dv.getCelular().getId()); 
+                                pstmtDetalle.setInt(3, dv.getCantidad());
+                                pstmtDetalle.setDouble(4, dv.getSubtotal());
+                                pstmtDetalle.executeUpdate();
+                            }
+                        }
+                    }
+                }
+            }
+            conn.commit();
+            System.out.println("¡Venta registrada exitosamente!");
+        } catch (Exception e) {
+            System.out.println("Error al guardar" + e.getMessage());
+        }
 
         carritoActual.clear();
     }

@@ -1,0 +1,9 @@
+==== RESUMEN DE VENTAS TOTALES TECNOSTORE ====
+Vendedora: Sara Julieth Sandoval Orellan (DEV001)
+Fecha/Hora: 2026-10-13T16:37:39.437764700
+----------------------------------------------
+- Apple iPhone 14 | Cantidad: 1 | Subtotal: $3500000.0
+- Realme 12 Pro+ | Cantidad: 1 | Subtotal: $1850000.0
+----------------------------------------------
+TOTAL GENERAL: $5350000.0
+==============================================

@@ -27,7 +27,7 @@ public class ArchivoUtils {
         try (PrintWriter writer = new PrintWriter(new FileWriter(nombreArchivo))) {
             writer.print(contenido);
         } catch (Exception e) {
-            System.out.println("Error al guardar el archivo de texto: " + e.getMessage());
+            System.out.println("Error al guardar el archivo: " + e.getMessage());
         }
     }
 }

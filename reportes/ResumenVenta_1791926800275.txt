@@ -1,0 +1,8 @@
+==== RESUMEN DE VENTAS TOTALES TECNOSTORE ====
+Vendedora: Sara Julieth Sandoval Orellan (DEV001)
+Fecha/Hora: 2026-10-13T16:26:40.275010300
+----------------------------------------------
+- Motorola Moto G67 5G | Cantidad: 1 | Subtotal: $987900.0
+----------------------------------------------
+TOTAL GENERAL: $987900.0
+==============================================
